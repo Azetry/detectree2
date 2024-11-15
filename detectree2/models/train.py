@@ -534,7 +534,7 @@ class MyTrainer(DefaultTrainer):
         return build_detection_test_loader(cfg, dataset_name, mapper=FlexibleDatasetMapper(cfg, is_train=False))
 
 
-def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
+def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = None, img_dir: Optional[str] = None) -> List[Dict[str, Any]]:
     """Get the tree dictionaries.
 
     Args:
@@ -549,13 +549,22 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
 
     dataset_dicts = []
 
-    for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
-        json_file = os.path.join(directory, filename)
+    for file_path in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
+        json_file = os.path.join(directory, file_path)
         with open(json_file) as f:
             img_anns = json.load(f)
 
         record: Dict[str, Any] = {}
-        filename = img_anns["imagePath"]
+        try:
+            filename = img_anns["imagePath"]
+        except:
+            filename = "%s/%s" % (img_dir, file_path.replace("Prediction_", "").replace("_eval.geojson", ".png"))
+            # check if file exists
+            if not os.path.exists(filename):
+                filename = filename.replace(".png", ".tif")
+            
+            if not os.path.exists(filename):
+                raise FileNotFoundError(f"File {filename.replace('.tif', '.png/tif')} does not exist")
 
         # Make sure we have the correct height and width
         # If image path ends in .png use cv2 to get height and width else if image path ends in .tif use rasterio
