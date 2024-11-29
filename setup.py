@@ -21,7 +21,7 @@ setup(
         "pygeos",
         "shapely",
         "geopandas",
-        "rasterio==1.3a3",
+        "rasterio==1.4.2",
         "fiona==1.9.6",
         "pycrs",
         "descartes",
